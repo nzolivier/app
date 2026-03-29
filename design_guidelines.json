@@ -1,0 +1,72 @@
+{
+  "theme": "dark",
+  "archetype": "5 (Jewel & Luxury)",
+  "colors": {
+    "background": "#000000",
+    "foreground": "#FFFFFF",
+    "primary": "#D4AF37",
+    "primary_foreground": "#000000",
+    "surface": "#0A0A0A",
+    "border": "rgba(212, 175, 55, 0.2)"
+  },
+  "typography": {
+    "font_family_heading": "Cormorant Garamond, serif",
+    "font_family_body": "Outfit, sans-serif",
+    "h1": "text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none font-serif",
+    "h2": "text-2xl sm:text-3xl lg:text-4xl tracking-tight font-serif",
+    "h3": "text-xl sm:text-2xl font-serif",
+    "body": "text-base md:text-lg leading-relaxed text-white/90 font-sans font-light",
+    "labels": "text-xs tracking-[0.2em] uppercase text-[#D4AF37]"
+  },
+  "spacing_and_layout": {
+    "container_padding": "p-8 sm:p-12 lg:p-24",
+    "chat_layout": "flex flex-col h-screen bg-black overflow-hidden",
+    "alignment": "Center alignment for onboarding/hero prompts. Left alignment for chat flow and paragraphs."
+  },
+  "motion_and_interactions": {
+    "hover_state": "Slight lift (-translate-y-1), and text color shifts to solid gold (#D4AF37).",
+    "transitions": "transition-all duration-500 ease-in-out",
+    "chat_animation": "Framer Motion: initial opacity-0 translate-y-4, animate opacity-100 translate-y-0, transition duration 0.8s ease"
+  },
+  "components": {
+    "chat_bubble_ai": "bg-transparent border border-[#D4AF37]/20 rounded-2xl p-6 md:p-8 text-white text-lg font-light leading-relaxed max-w-[85%] md:max-w-[70%]",
+    "chat_bubble_user": "bg-[#111111] text-white border border-white/10 rounded-2xl p-6 md:p-8 self-end max-w-[85%] md:max-w-[70%]",
+    "input_area": "bg-black/80 border-t border-[#D4AF37]/20 p-4 md:p-8 backdrop-blur-2xl",
+    "input_field": "bg-transparent border-none text-white placeholder-white/30 focus:ring-0 text-lg md:text-xl font-light",
+    "button": "bg-[#D4AF37] text-black hover:bg-[#C29B2E] rounded-full px-8 py-4 text-sm font-semibold tracking-wide transition-colors flex items-center justify-center"
+  },
+  "assets": {
+    "icons_library": "lucide-react",
+    "images": [
+      {
+        "category": "logo",
+        "url": "https://static.prod-images.emergentagent.com/jobs/a2025be9-9ee4-476a-919c-46e92129890e/images/5919e22cd369047abe23906169ab5aea282959e86819b16d96cee17d758446ad.png",
+        "description": "AUREN minimalist luxury gold logo on transparent background. Use for splash screen or subtle top nav."
+      },
+      {
+        "category": "background_texture",
+        "url": "https://images.unsplash.com/photo-1760978632119-5069b6c9fb68?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwzfHxtaW5pbWFsaXN0JTIwZGFyayUyMGdvbGQlMjBhYnN0cmFjdCUyMHRleHR1cmV8ZW58MHx8fHwxNzc0NzgwODc2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Wavy metallic gold/black surface. Use with very low opacity (10-15%) as a full-page background texture to break up the solid black."
+      },
+      {
+         "category": "hero_abstract",
+         "url": "https://static.prod-images.emergentagent.com/jobs/a2025be9-9ee4-476a-919c-46e92129890e/images/8c4de83f72de4547628e25d933e1017da74d6a64a5ca964c42c0ab288e67e7c1.png",
+         "description": "Dark luxury gold subtle wave background for the landing or first screen prompt ('How do you feel today?')."
+      }
+    ]
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure white text has at least 4.5:1 ratio against #000000 background. Gold (#D4AF37) is used for accents and headings only to maintain high readability.",
+    "testing_attributes": "All interactive elements must include data-testid (e.g., data-testid='chat-input', data-testid='send-button')."
+  },
+  "instructions_to_main_agent": [
+    "Ensure pure black (#000000) background globally. Do not use generic white/gray Shadcn backgrounds.",
+    "Use vanilla HTML/Tailwind over generic Shadcn cards to maintain the premium, border-light design language.",
+    "Import 'Cormorant Garamond' and 'Outfit' fonts from Google Fonts and configure them in Tailwind.",
+    "Create a breathtaking first screen with 'How do you feel today?' centered in large serif type. Transition smoothly into the chat when the user types.",
+    "The AI (Thoth) personality is calm, deep, human, and slightly spiritual. Implement mock interactions or an LLM call reflecting this persona and its ability to detect English/French.",
+    "Daily reflections can be shown subtly on the initial screen or inside the chat stream as a distinct stylized component.",
+    "Use Framer Motion to softly fade in messages, mimicking a deep, thoughtful pause from the AI.",
+    "Use JS (.js/.jsx) exclusively, no TypeScript (.tsx)."
+  ]
+}
