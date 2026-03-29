@@ -1,0 +1,92 @@
+{
+  "timestamp": "20260329_104702",
+  "total_tests": 6,
+  "passed_tests": 5,
+  "success_rate": "83.3%",
+  "test_details": [
+    {
+      "test_name": "Root API Endpoint",
+      "endpoint": "",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "message": "AUREN - AI Healing & Self-Reflection"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Daily Reflection",
+      "endpoint": "daily-reflection",
+      "method": "GET",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "en": "When you feel most alive, what are you doing?",
+        "fr": "Si votre jeune moi pouvait vous voir maintenant, qu'est-ce qui le surprendrait?"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Chat - English Message",
+      "endpoint": "chat",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "response": "What part of the future weighs most heavily on you right now?\n\nWhen you imagine moving forward, what do you fear you might lose, or what do you fear you won't find?",
+        "language": "en"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Chat - French Message",
+      "endpoint": "chat",
+      "method": "POST",
+      "expected_status": 200,
+      "actual_status": 200,
+      "success": true,
+      "response_data": {
+        "response": "Qu'est-ce qui p\u00e8se sur ton c\u0153ur en ce moment ? \n\nY a-t-il quelque chose de pr\u00e9cis qui a fait na\u00eetre cette tristesse, ou est-ce plut\u00f4t comme un nuage qui s'est install\u00e9 doucement ?",
+        "language": "en"
+      },
+      "error": null
+    },
+    {
+      "test_name": "Chat - Empty Message",
+      "endpoint": "chat",
+      "method": "POST",
+      "expected_status": 400,
+      "actual_status": 500,
+      "success": false,
+      "response_data": null,
+      "error": "{\"detail\":\"400: Message cannot be empty\"}"
+    },
+    {
+      "test_name": "Chat - No Message Field",
+      "endpoint": "chat",
+      "method": "POST",
+      "expected_status": 422,
+      "actual_status": 422,
+      "success": true,
+      "response_data": {
+        "detail": [
+          {
+            "type": "missing",
+            "loc": [
+              "body",
+              "message"
+            ],
+            "msg": "Field required",
+            "input": {},
+            "url": "https://errors.pydantic.dev/2.12/v/missing"
+          }
+        ]
+      },
+      "error": null
+    }
+  ]
+}
