@@ -32,22 +32,27 @@ async def root():
 
 @api_router.post("/chat", response_model=ChatResponse)
 async def chat(input: ChatMessage):
+    user_message = input.message.strip()
+    
+    if not user_message:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
     try:
-        user_message = input.message.strip()
-        
-        if not user_message:
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
         detected_language = "en"
         french_indicators = ["je", "tu", "il", "elle", "nous", "vous", "ils", "elles", 
                            "suis", "es", "est", "sommes", "êtes", "sont",
                            "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
-                           "le", "la", "les", "un", "une", "des", "ça", "où", "été"]
+                           "le", "la", "les", "un", "une", "des", "ça", "où", "été",
+                           "ai", "as", "a", "avons", "avez", "ont",
+                           "me", "te", "se", "ce", "de", "ne", "que", "qui",
+                           "mais", "pour", "avec", "sans", "dans", "sur", "très", "bien",
+                           "bonjour", "bonsoir", "merci", "comment", "quoi", "quand"]
         
         message_lower = user_message.lower()
-        french_word_count = sum(1 for word in french_indicators if f" {word} " in f" {message_lower} " or message_lower.startswith(f"{word} ") or message_lower.endswith(f" {word}"))
+        words = message_lower.split()
+        french_word_count = sum(1 for word in words if word in french_indicators)
         
-        if french_word_count >= 2:
+        if french_word_count >= 1:
             detected_language = "fr"
         
         system_message = """
