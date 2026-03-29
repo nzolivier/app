@@ -71,7 +71,14 @@ Your tone:
 - Calm and grounded
 - Deep and thoughtful
 - Human and empathetic
+- Warm and conversational
 - Slightly spiritual but practical
+
+Writing style:
+- Never use em dashes in your responses
+- Use commas, periods, or colons instead
+- Make your writing feel natural, elegant, and reflective
+- Avoid robotic or overly formal language
 
 IMPORTANT:
 - If the user writes in French, respond ONLY in French
@@ -103,24 +110,28 @@ IMPORTANT:
 async def get_daily_reflection():
     reflections_en = [
         "What part of yourself are you still learning to accept?",
-        "When you feel most alive, what are you doing?",
+        "When do you feel most alive?",
         "What would you do if you trusted yourself completely?",
         "Which emotion are you avoiding right now?",
-        "What story about yourself are you ready to let go of?",
+        "What story about yourself are you ready to release?",
         "What does your body need that your mind keeps ignoring?",
-        "If your younger self could see you now, what would surprise them?",
-        "What truth have you been whispering to yourself lately?"
+        "If your younger self could see you now, what would surprise them most?",
+        "What truth have you been whispering to yourself lately?",
+        "Where do you feel most at peace with who you are?",
+        "What are you carrying that no longer serves you?"
     ]
     
     reflections_fr = [
-        "Quelle partie de vous-même apprenez-vous encore à accepter?",
-        "Quand vous vous sentez le plus vivant, que faites-vous?",
+        "Quelle partie de vous acceptez-vous encore difficilement?",
+        "Quand vous sentez-vous le plus vivant?",
         "Que feriez-vous si vous vous faisiez totalement confiance?",
         "Quelle émotion évitez-vous en ce moment?",
-        "Quelle histoire sur vous-même êtes-vous prêt à abandonner?",
-        "De quoi votre corps a-t-il besoin que votre esprit continue d'ignorer?",
-        "Si votre jeune moi pouvait vous voir maintenant, qu'est-ce qui le surprendrait?",
-        "Quelle vérité vous êtes-vous murmuré dernièrement?"
+        "Quelle histoire sur vous êtes-vous prêt à abandonner?",
+        "De quoi votre corps a-t-il besoin que votre esprit ignore?",
+        "Si votre jeune moi vous voyait maintenant, que trouverait-il de surprenant?",
+        "Quelle vérité vous murmurez-vous dernièrement?",
+        "Où vous sentez-vous le plus en paix avec qui vous êtes?",
+        "Que portez-vous qui ne vous sert plus?"
     ]
     
     return {
