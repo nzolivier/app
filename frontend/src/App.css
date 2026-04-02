@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+#emergent-badge {
+  display: none !important;
+  visibility: hidden !important;
+}
+
 .glass-effect {
   background: rgba(10, 10, 10, 0.6);
   backdrop-filter: blur(20px);
