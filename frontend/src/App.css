@@ -2,9 +2,23 @@
   box-sizing: border-box;
 }
 
-#emergent-badge {
+/* Hide all Emergent branding */
+#emergent-badge,
+a[href*="emergent.sh"],
+a[href*="emergent"],
+[class*="emergent-badge"],
+[id*="emergent-badge"],
+div[style*="Made with Emergent"],
+p:contains("Made with Emergent"),
+a:contains("Made with Emergent") {
   display: none !important;
   visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
 }
 
 .glass-effect {

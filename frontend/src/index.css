@@ -4,6 +4,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide all Emergent branding globally */
+#emergent-badge,
+a[href*="emergent.sh"],
+a[href*="app.emergent"],
+[class*="emergent-badge"],
+[id*="emergent-badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  left: -9999px !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  z-index: -9999 !important;
+}
+
 @layer base {
   * {
     margin: 0;
