@@ -7,17 +7,35 @@ import "@/App.css";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const translations = {
+  en: {
+    mainQuestion: "How do you feel today?",
+    beginButton: "Begin",
+    chatPlaceholder: "Share what's on your mind...",
+  },
+  fr: {
+    mainQuestion: "Comment vous sentez-vous aujourd'hui ?",
+    beginButton: "Commencer",
+    chatPlaceholder: "Exprimez vos pensées...",
+  }
+};
+
 function App() {
   const [started, setStarted] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [dailyReflection, setDailyReflection] = useState({ en: "", fr: "" });
-  const [currentLanguage, setCurrentLanguage] = useState("en");
+  const [language, setLanguage] = useState("en");
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
+    // Detect browser language
+    const browserLang = navigator.language || navigator.userLanguage;
+    if (browserLang.toLowerCase().startsWith('fr')) {
+      setLanguage('fr');
+    }
     fetchDailyReflection();
   }, []);
 
@@ -46,6 +64,10 @@ function App() {
     setStarted(true);
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === "en" ? "fr" : "en");
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
@@ -61,14 +83,13 @@ function App() {
         message: userMessage
       });
       
-      setCurrentLanguage(response.data.language);
       setMessages(prev => [...prev, { 
         role: "ai", 
         content: response.data.response 
       }]);
     } catch (error) {
       console.error("Chat error:", error);
-      const errorMsg = currentLanguage === "fr" 
+      const errorMsg = language === "fr" 
         ? "Désolé, une erreur s'est produite. Veuillez réessayer."
         : "Sorry, something went wrong. Please try again.";
       setMessages(prev => [...prev, { role: "ai", content: errorMsg }]);
@@ -76,6 +97,8 @@ function App() {
       setIsLoading(false);
     }
   };
+
+  const t = translations[language];
 
   if (!started) {
     return (
@@ -88,6 +111,40 @@ function App() {
             backgroundPosition: 'center'
           }}
         />
+        
+        {/* Language Switcher */}
+        <motion.div 
+          className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex items-center gap-2 text-sm font-light">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`transition-colors duration-300 ${
+                language === 'en' 
+                  ? 'text-[#D4AF37] font-medium' 
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+              data-testid="lang-switch-en"
+            >
+              EN
+            </button>
+            <span className="text-white/30">|</span>
+            <button
+              onClick={() => setLanguage('fr')}
+              className={`transition-colors duration-300 ${
+                language === 'fr' 
+                  ? 'text-[#D4AF37] font-medium' 
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+              data-testid="lang-switch-fr"
+            >
+              FR
+            </button>
+          </div>
+        </motion.div>
         
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -111,8 +168,9 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
             data-testid="main-question"
+            key={`question-${language}`}
           >
-            How do you feel today?
+            {t.mainQuestion}
           </motion.h1>
           
           <motion.p 
@@ -121,8 +179,9 @@ function App() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.8 }}
             data-testid="daily-reflection"
+            key={`reflection-${language}`}
           >
-            {dailyReflection.en}
+            {dailyReflection[language] || dailyReflection.en}
           </motion.p>
           
           <motion.button
@@ -134,9 +193,10 @@ function App() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.98 }}
             data-testid="begin-button"
+            key={`button-${language}`}
           >
             <Sparkles size={18} />
-            Begin
+            {t.beginButton}
           </motion.button>
         </motion.div>
       </div>
@@ -145,6 +205,39 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-black overflow-hidden" data-testid="chat-container">
+      {/* Language Switcher in Chat */}
+      <motion.div 
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+      >
+        <div className="flex items-center gap-2 text-xs font-light">
+          <button
+            onClick={() => setLanguage('en')}
+            className={`transition-colors duration-300 ${
+              language === 'en' 
+                ? 'text-[#D4AF37] font-medium' 
+                : 'text-white/50 hover:text-white/80'
+            }`}
+            data-testid="chat-lang-switch-en"
+          >
+            EN
+          </button>
+          <span className="text-white/30">|</span>
+          <button
+            onClick={() => setLanguage('fr')}
+            className={`transition-colors duration-300 ${
+              language === 'fr' 
+                ? 'text-[#D4AF37] font-medium' 
+                : 'text-white/50 hover:text-white/80'
+            }`}
+            data-testid="chat-lang-switch-fr"
+          >
+            FR
+          </button>
+        </div>
+      </motion.div>
+
       <motion.div 
         className="flex-1 overflow-y-auto px-4 sm:px-8 py-8 sm:py-12 space-y-8"
         initial={{ opacity: 0 }}
@@ -235,7 +328,7 @@ function App() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={currentLanguage === "fr" ? "Exprimez vos pensées..." : "Share what's on your mind..."}
+              placeholder={t.chatPlaceholder}
               className="flex-1 bg-transparent border-none text-white placeholder-white/30 focus:outline-none focus:ring-0 text-lg md:text-xl font-light"
               disabled={isLoading}
               data-testid="chat-input"
