@@ -10,11 +10,13 @@ const API = `${BACKEND_URL}/api`;
 const translations = {
   en: {
     mainQuestion: "How do you feel today?",
+    subText: "You can write anything here. No one will know it's you.",
     beginButton: "Begin",
     chatPlaceholder: "Share what's on your mind...",
   },
   fr: {
     mainQuestion: "Comment vous sentez-vous aujourd'hui ?",
+    subText: "Vous pouvez tout écrire ici. Personne ne saura que c'est vous.",
     beginButton: "Commencer",
     chatPlaceholder: "Exprimez vos pensées...",
   }
@@ -163,7 +165,7 @@ function App() {
           />
           
           <motion.h1 
-            className="font-serif text-4xl sm:text-5xl lg:text-6xl text-white mb-6 sm:mb-8 tracking-tight leading-none text-shadow-gold"
+            className="font-serif text-4xl sm:text-5xl lg:text-6xl text-white mb-4 sm:mb-6 tracking-tight leading-none text-shadow-gold"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
@@ -174,14 +176,14 @@ function App() {
           </motion.h1>
           
           <motion.p 
-            className="font-sans font-light text-base md:text-lg text-white/70 mb-12 sm:mb-16 max-w-md leading-relaxed"
+            className="font-sans font-light text-base md:text-lg text-white/60 mb-8 sm:mb-10 max-w-md leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.8 }}
-            data-testid="daily-reflection"
-            key={`reflection-${language}`}
+            data-testid="sub-text"
+            key={`subtext-${language}`}
           >
-            {dailyReflection[language] || dailyReflection.en}
+            {t.subText}
           </motion.p>
           
           <motion.button
