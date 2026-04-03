@@ -12,13 +12,13 @@ const translations = {
     mainQuestion: "How do you feel today?",
     subText: "You can write anything here. No one will know it's you.",
     beginButton: "Begin",
-    chatPlaceholder: "Share what's on your mind...",
+    chatPlaceholder: "I feel lost lately and I don't know why...",
   },
   fr: {
     mainQuestion: "Comment vous sentez-vous aujourd'hui ?",
     subText: "Vous pouvez tout écrire ici. Personne ne saura que c'est vous.",
     beginButton: "Commencer",
-    chatPlaceholder: "Exprimez vos pensées...",
+    chatPlaceholder: "Je me sens perdu ces derniers temps et je ne sais pas pourquoi...",
   }
 };
 
