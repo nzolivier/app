@@ -82,7 +82,8 @@ function App() {
 
     try {
       const response = await axios.post(`${API}/chat`, {
-        message: userMessage
+        message: userMessage,
+        conversation_history: messages
       });
       
       setMessages(prev => [...prev, { 

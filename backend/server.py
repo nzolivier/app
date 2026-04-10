@@ -6,6 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel
+from typing import List, Optional
 import random
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 
@@ -19,8 +20,13 @@ db = client[os.environ['DB_NAME']]
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+class ConversationMessage(BaseModel):
+    role: str
+    content: str
+
 class ChatMessage(BaseModel):
     message: str
+    conversation_history: Optional[List[ConversationMessage]] = []
 
 class ChatResponse(BaseModel):
     response: str
@@ -91,12 +97,20 @@ Writing style:
 - No robotic phrasing
 - No repetitive question patterns
 
+Conversation continuity:
+- Remember what the user has shared earlier in this conversation
+- Connect your responses to the full story they're telling
+- Reference earlier topics when relevant
+- Show that you're following their journey
+- Build on previous insights naturally
+- Do not ask the same questions repeatedly
+
 Conversation structure:
 - ALWAYS acknowledge what the user just said first
 - Show that you truly heard and understood them
+- Consider the full context of the conversation before responding
 - Then invite them deeper with a single thoughtful question
 - Do not ask multiple questions in one response
-- Avoid asking the same type of question repeatedly
 
 First message behavior:
 When this is the very first message from a user (conversation just started), respond with a calm, welcoming opening like:
@@ -120,13 +134,37 @@ IMPORTANT language rules:
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
+        # Create a unique session ID for this conversation context
+        import uuid
+        session_id = str(uuid.uuid4())
+        
         chat_instance = LlmChat(
             api_key=api_key,
-            session_id="auren_reflection",
+            session_id=session_id,
             system_message=system_message
         ).with_model("anthropic", "claude-sonnet-4-5-20250929")
         
-        user_msg = UserMessage(text=user_message)
+        # Build conversation context from history
+        # The LlmChat library maintains its own message history, but we need to
+        # reconstruct the conversation for each request since we're stateless
+        full_conversation_text = ""
+        
+        if input.conversation_history and len(input.conversation_history) > 0:
+            # Build context from previous messages (last 10 for token efficiency)
+            context_parts = []
+            for msg in input.conversation_history[-10:]:
+                role_label = "User" if msg.role == "user" else "Thoth"
+                context_parts.append(f"{role_label}: {msg.content}")
+            
+            full_conversation_text = "\n\n".join(context_parts)
+            full_conversation_text += f"\n\nUser: {user_message}"
+            
+            # For continuing conversations, send the full context
+            user_msg = UserMessage(text=full_conversation_text)
+        else:
+            # First message - send as is
+            user_msg = UserMessage(text=user_message)
+        
         ai_response = await chat_instance.send_message(user_msg)
         
         return ChatResponse(response=ai_response, language=detected_language)
