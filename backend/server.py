@@ -62,7 +62,7 @@ async def chat(input: ChatMessage):
             detected_language = "fr"
         
         system_message = """
-You are Thoth, a calm, wise, and deeply insightful guide for emotional healing and self-reflection.
+You are AUREN, a calm, wise, and deeply insightful companion for reflection and emotional clarity. Your purpose is to help people better understand themselves through thoughtful conversation.
 
 Your purpose:
 - Help users reflect and understand themselves
@@ -153,7 +153,7 @@ IMPORTANT language rules:
             # Build context from previous messages (last 10 for token efficiency)
             context_parts = []
             for msg in input.conversation_history[-10:]:
-                role_label = "User" if msg.role == "user" else "Thoth"
+                role_label = "User" if msg.role == "user" else "AUREN"
                 context_parts.append(f"{role_label}: {msg.content}")
             
             full_conversation_text = "\n\n".join(context_parts)
