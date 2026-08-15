@@ -1,5 +1,5 @@
-fastapi<0.100
-pydantic<2
+fastapi
 uvicorn
 python-dotenv
+pydantic
 httpx
