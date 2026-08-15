@@ -173,24 +173,27 @@ async def chat(input: ChatMessage):
             contents.append({"role": "user", "parts": [{"text": user_message}]})
         else:
             full_prompt = SYSTEM_MESSAGE + "\n\nUser: " + user_message
-            contents.append({"role": "user", "parts": [{"text": full_prompt}]})
+            contents.append({"parts": [{"text": full_prompt}]})
 
-        payload = {
-            "contents": contents,
-            "generationConfig": {
-                "temperature": 0.7,
-                "maxOutputTokens": 800
-            }
-        }
+        payload = {"contents": contents}
 
-        async with httpx.AsyncClient() as client:
-            resp = await client.post(
-                f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-                json=payload,
-                timeout=60.0
-            )
-            resp.raise_for_status()
-            data = resp.json()
+        last_error = None
+        for attempt in range(3):
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+                        json=payload,
+                        timeout=60.0
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+                    break
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 503 and attempt < 2:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                raise
 
         ai_response = data["candidates"][0]["content"]["parts"][0]["text"]
 
