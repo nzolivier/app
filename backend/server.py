@@ -14,7 +14,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
 app = FastAPI()
 api_router = APIRouter(prefix='/api')
@@ -165,18 +165,18 @@ async def chat(input: ChatMessage):
             detected_language = 'fr'
 
         contents = []
+        
         if input.conversation_history and len(input.conversation_history) > 0:
             for msg in input.conversation_history[-10:]:
                 role = "user" if msg.role == "user" else "model"
                 contents.append({"role": role, "parts": [{"text": msg.content}]})
-
-        contents.append({"role": "user", "parts": [{"text": user_message}]})
+            contents.append({"role": "user", "parts": [{"text": user_message}]})
+        else:
+            full_prompt = SYSTEM_MESSAGE + "\n\nUser: " + user_message
+            contents.append({"role": "user", "parts": [{"text": full_prompt}]})
 
         payload = {
             "contents": contents,
-            "systemInstruction": {
-                "parts": [{"text": SYSTEM_MESSAGE}]
-            },
             "generationConfig": {
                 "temperature": 0.7,
                 "maxOutputTokens": 800
