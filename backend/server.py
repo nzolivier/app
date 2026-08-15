@@ -1,6 +1,7 @@
 import os
 import logging
 import asyncio
+import re
 from pathlib import Path
 from typing import List, Optional
 
@@ -195,7 +196,21 @@ async def chat(input: ChatMessage):
                     continue
                 raise
 
-        ai_response = data["candidates"][0]["content"]["parts"][0]["text"]
+        raw_response = data["candidates"][0]["content"]["parts"][0]["text"]
+        
+        # Strip markdown and forbidden characters
+        ai_response = raw_response
+        ai_response = ai_response.replace('*', '')           # Remove all asterisks
+        ai_response = ai_response.replace('—', '-')          # Replace em dash
+        ai_response = ai_response.replace('–', '-')          # Replace en dash
+        ai_response = ai_response.replace('`', '')            # Remove backticks
+        ai_response = ai_response.replace('#', '')           # Remove hashtags
+        ai_response = ai_response.replace('_', '')           # Remove underscores
+        ai_response = ai_response.replace('~', '')           # Remove tildes
+        ai_response = ai_response.replace('>', '')             # Remove blockquote markers
+        ai_response = ai_response.replace('|', '')             # Remove table pipes
+        ai_response = re.sub(r'  +', ' ', ai_response)        # Clean double spaces
+        ai_response = re.sub(r'\n\s*\n\s*\n+', '\n\n', ai_response)  # Clean extra blank lines
 
         return ChatResponse(response=ai_response, language=detected_language)
 
