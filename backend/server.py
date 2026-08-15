@@ -1,24 +1,22 @@
-from fastapi import FastAPI, APIRouter, HTTPException
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import asyncio
 from pathlib import Path
-from pydantic import BaseModel
 from typing import List, Optional
-import random
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from dotenv import load_dotenv
+import google.generativeai as genai
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
 
 app = FastAPI()
-api_router = APIRouter(prefix="/api")
+api_router = APIRouter(prefix='/api')
 
 class ConversationMessage(BaseModel):
     role: str
@@ -32,37 +30,7 @@ class ChatResponse(BaseModel):
     response: str
     language: str
 
-@api_router.get("/")
-async def root():
-    return {"message": "AUREN - AI Healing & Self-Reflection"}
-
-@api_router.post("/chat", response_model=ChatResponse)
-async def chat(input: ChatMessage):
-    user_message = input.message.strip()
-    
-    if not user_message:
-        raise HTTPException(status_code=400, detail="Message cannot be empty")
-    
-    try:
-        detected_language = "en"
-        french_indicators = ["je", "tu", "il", "elle", "nous", "vous", "ils", "elles", 
-                           "suis", "es", "est", "sommes", "êtes", "sont",
-                           "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
-                           "le", "la", "les", "un", "une", "des", "ça", "où", "été",
-                           "ai", "as", "a", "avons", "avez", "ont",
-                           "me", "te", "se", "ce", "de", "ne", "que", "qui",
-                           "mais", "pour", "avec", "sans", "dans", "sur", "très", "bien",
-                           "bonjour", "bonsoir", "merci", "comment", "quoi", "quand"]
-        
-        message_lower = user_message.lower()
-        words = message_lower.split()
-        french_word_count = sum(1 for word in words if word in french_indicators)
-        
-        if french_word_count >= 1:
-            detected_language = "fr"
-        
-        system_message = """
-You are AUREN, a wise, calm, and deeply reflective companion. You exist to help people understand themselves more clearly.
+SYSTEM_MESSAGE = """You are AUREN, a wise, calm, and deeply reflective companion. You exist to help people understand themselves more clearly.
 
 Your central philosophy:
 "Most people don't need someone to fix them. They need a place where they can finally hear themselves think."
@@ -83,7 +51,7 @@ What you avoid:
 - Sounding like a customer support bot
 - Repeatedly explaining what you are
 - Filling responses with unnecessary words
-- Phrases like "I'm designed to...", "I'm programmed to...", "I'm here to...", "I'm a companion that...", "I'm not here to compare...", unless directly answering an identity question
+- Phrases like "I'm designed to...", "I'm programmed to...", "I'm here to...", "I'm a companion that...", unless directly answering an identity question
 - Pretending to have consciousness, emotions, beliefs, or memories beyond the current conversation
 - Manipulating or avoiding honest answers
 
@@ -165,52 +133,63 @@ IMPORTANT language rules:
 - Never mix languages in a single response
 - Apply ALL the same formatting and personality rules in both languages
 """
-        
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
-        if not api_key:
-            raise HTTPException(status_code=500, detail="API key not configured")
-        
-        # Create a unique session ID for this conversation context
-        import uuid
-        session_id = str(uuid.uuid4())
-        
-        chat_instance = LlmChat(
-            api_key=api_key,
-            session_id=session_id,
-            system_message=system_message
-        ).with_model("anthropic", "claude-sonnet-4-5-20250929")
-        
-        # Build conversation context from history
-        # The LlmChat library maintains its own message history, but we need to
-        # reconstruct the conversation for each request since we're stateless
-        full_conversation_text = ""
-        
+
+@api_router.get('/')
+async def root():
+    return {'message': 'AUREN - AI Healing & Self-Reflection'}
+
+@api_router.post('/chat', response_model=ChatResponse)
+async def chat(input: ChatMessage):
+    user_message = input.message.strip()
+
+    if not user_message:
+        raise HTTPException(status_code=400, detail='Message cannot be empty')
+
+    try:
+        detected_language = 'en'
+        french_indicators = ["je", "tu", "il", "elle", "nous", "vous", "ils", "elles",
+                           "suis", "es", "est", "sommes", "êtes", "sont",
+                           "mon", "ma", "mes", "ton", "ta", "tes", "son", "sa", "ses",
+                           "le", "la", "les", "un", "une", "des", "ça", "où", "été",
+                           "ai", "as", "a", "avons", "avez", "ont",
+                           "me", "te", "se", "ce", "de", "ne", "que", "qui",
+                           "mais", "pour", "avec", "sans", "dans", "sur", "très", "bien",
+                           "bonjour", "bonsoir", "merci", "comment", "quoi", "quand"]
+
+        message_lower = user_message.lower()
+        words = message_lower.split()
+        french_word_count = sum(1 for word in words if word in french_indicators)
+
+        if french_word_count >= 1:
+            detected_language = 'fr'
+
+        history = []
         if input.conversation_history and len(input.conversation_history) > 0:
-            # Build context from previous messages (last 10 for token efficiency)
-            context_parts = []
             for msg in input.conversation_history[-10:]:
-                role_label = "User" if msg.role == "user" else "AUREN"
-                context_parts.append(f"{role_label}: {msg.content}")
-            
-            full_conversation_text = "\n\n".join(context_parts)
-            full_conversation_text += f"\n\nUser: {user_message}"
-            
-            # For continuing conversations, send the full context
-            user_msg = UserMessage(text=full_conversation_text)
-        else:
-            # First message - send as is
-            user_msg = UserMessage(text=user_message)
-        
-        ai_response = await chat_instance.send_message(user_msg)
-        
+                role = "user" if msg.role == "user" else "model"
+                history.append({"role": role, "parts": [msg.content]})
+
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=SYSTEM_MESSAGE
+        )
+
+        chat = model.start_chat(history=history)
+
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, lambda: chat.send_message(user_message))
+
+        ai_response = response.text
+
         return ChatResponse(response=ai_response, language=detected_language)
-    
+
     except Exception as e:
-        logging.error(f"Chat error: {str(e)}")
+        logging.error(f'Chat error: {str(e)}')
         raise HTTPException(status_code=500, detail=str(e))
 
-@api_router.get("/daily-reflection")
+@api_router.get('/daily-reflection')
 async def get_daily_reflection():
+    import random
     reflections_en = [
         "What part of yourself are you still learning to accept?",
         "When do you feel most alive?",
@@ -223,7 +202,7 @@ async def get_daily_reflection():
         "Where do you feel most at peace with who you are?",
         "What are you carrying that no longer serves you?"
     ]
-    
+
     reflections_fr = [
         "Quelle partie de vous acceptez-vous encore difficilement?",
         "Quand vous sentez-vous le plus vivant?",
@@ -236,7 +215,7 @@ async def get_daily_reflection():
         "Où vous sentez-vous le plus en paix avec qui vous êtes?",
         "Que portez-vous qui ne vous sert plus?"
     ]
-    
+
     return {
         "en": random.choice(reflections_en),
         "fr": random.choice(reflections_fr)
@@ -258,6 +237,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+if __name__ == '__main__':
+    import uvicorn
+    port = int(os.environ.get('PORT', 8000))
+    uvicorn.run(app, host='0.0.0.0', port=port)
