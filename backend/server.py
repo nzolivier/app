@@ -8,12 +8,13 @@ from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import google.generativeai as genai
+import httpx
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-genai.configure(api_key=os.environ.get('GEMINI_API_KEY'))
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
 app = FastAPI()
 api_router = APIRouter(prefix='/api')
@@ -163,23 +164,35 @@ async def chat(input: ChatMessage):
         if french_word_count >= 1:
             detected_language = 'fr'
 
-        history = []
+        contents = []
         if input.conversation_history and len(input.conversation_history) > 0:
             for msg in input.conversation_history[-10:]:
                 role = "user" if msg.role == "user" else "model"
-                history.append({"role": role, "parts": [msg.content]})
+                contents.append({"role": role, "parts": [{"text": msg.content}]})
 
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=SYSTEM_MESSAGE
-        )
+        contents.append({"role": "user", "parts": [{"text": user_message}]})
 
-        chat = model.start_chat(history=history)
+        payload = {
+            "contents": contents,
+            "systemInstruction": {
+                "parts": [{"text": SYSTEM_MESSAGE}]
+            },
+            "generationConfig": {
+                "temperature": 0.7,
+                "maxOutputTokens": 800
+            }
+        }
 
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(None, lambda: chat.send_message(user_message))
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+                json=payload,
+                timeout=60.0
+            )
+            resp.raise_for_status()
+            data = resp.json()
 
-        ai_response = response.text
+        ai_response = data["candidates"][0]["content"]["parts"][0]["text"]
 
         return ChatResponse(response=ai_response, language=detected_language)
 
